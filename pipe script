@@ -1,0 +1,60 @@
+pipeline {
+
+    agent any
+    tools{
+        nodejs 'mynodejs'
+    }
+    stages {
+
+        stage('git cloning') {
+
+            steps {
+
+                echo 'cloning files from github'
+                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sanketpatil461/nodepipeline.git']])
+            }
+
+        }
+
+        stage('Build') {
+
+            steps {
+
+                echo 'Building nodejs project'
+                sh 'npm install'
+            }
+
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing project'
+                sh './node_modules/mocha/bin/_mocha --exit test/test.js'
+            }
+
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying nodejs project on live server'
+                script{
+                    sshagent(['eb65d85a-ca49-4d9e-a14d-171dbcdded0a']) {
+                      sh '''
+                           ssh -o StrictHostKeyChecking=no ubuntu@3.7.69.190<<EOF
+                            cd /home/ubuntu/nodeapp/
+                            git pull https://github.com/sanketpatil461/nodepipeline.git
+                            npm install
+                            sudo npm install -g pm2
+                            pm2 restart index.js || pm2 start index.js
+		                    exit
+                            EOF     
+                         '''
+                   }
+                }
+            }
+        }
+    }
+}  
+    
+
+ 

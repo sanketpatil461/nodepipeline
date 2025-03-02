@@ -18,19 +18,18 @@ Now create a pipeline give name and description ---- Build Triggers ----> Github
 below is the code of the whole pipeline ------>
 
 
-pipeline {  
-
+    pipeline{
     agent any   // it means if we are deploying the code of the available server (jenkins works on master and slave architecture)
     tools{
         nodejs 'mynodejs' // Node.js installation configured in Jenkins (this is the tool of nodejs and we enterred the name of it that we are given to it earlier)
     }
     stages {
 
-        stage('git cloning') {
+        stage('Git Clone') {
 
             steps {
 
-                echo 'cloning files from github'
+                echo 'Cloning from Git....'
                 checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sanketpatil461/nodepipeline.git']])
             }
 
@@ -40,7 +39,7 @@ pipeline {
 
             steps {
 
-                echo 'Building nodejs project'
+                echo 'Building node.js project'
                 sh 'npm install'
             }
 
@@ -74,7 +73,7 @@ pipeline {
             }
         }
     }
-} 
+    } 
     
 
  

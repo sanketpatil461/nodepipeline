@@ -17,7 +17,6 @@ Now create a pipeline give name and description ---- Build Triggers ----> Github
 
 below is the code of the whole pipeline ------>
 
-
     pipeline {
     agent any     // it means if we are deploying the code of the available server (jenkins works on master and slave architecture)
     tools {

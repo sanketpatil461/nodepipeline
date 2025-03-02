@@ -21,7 +21,7 @@ below is the code of the whole pipeline ------>
     pipeline {
     agent any     // it means if we are deploying the code of the available server (jenkins works on master and slave architecture)
     tools {
-        nodejs 'mynode'  // Node.js installation configured in Jenkins (this is the tool of nodejs and we enterred the name of it that we are given to it earlier)
+        nodejs 'mynodejs'  // Node.js installation configured in Jenkins (this is the tool of nodejs and we enterred the name of it that we are given to it earlier)
     }
     stages {
         stage('Git Clone') {
@@ -50,10 +50,9 @@ below is the code of the whole pipeline ------>
                 echo 'Deploying to the server...'
                 echo 'Deploying Node.js project'
                 script {
-                    sshagent(['463daf09-3c37-433b-87e4-3d977d86b5d4']) {    // this is the id of the user that we created in []
+                    sshagent(['eb65d85a-ca49-4d9e-a14d-171dbcdded0a']) {    // this is the id of the user that we created in []
                         sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@3.92.192.219 << EOF   // here we given the public ip of the deployment server
-                        cd /home/ubuntu/mynodeapp || { echo "Deployment directory does not exist. Exiting..."; exit 1; }
                         git pull --rebase https://github.com/sanketpatil461/nodepipeline.git     // the repository link from where we have to push the code (means our code is  already on that repository)
                         npm install
                         sudo npm install -g pm2

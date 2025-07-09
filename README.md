@@ -18,15 +18,21 @@ Now create a pipeline give name and description ---- Build Triggers ----> Github
 below is the code of the whole pipeline ------>
 
     pipeline {
-    agent any     // it means if we are deploying the code of the available server (jenkins works on master and slave architecture)
+    agent any  // This allows Jenkins to run the pipeline on any available agent
+
     tools {
-        nodejs 'mynodejs'  // Node.js installation configured in Jenkins (this is the tool of nodejs and we enterred the name of it that we are given to it earlier)
+        nodejs 'mynodejs'  // Use the Node.js tool named 'mynodejs' configured in Jenkins
     }
+
     stages {
+
         stage('Git Clone') {
             steps {
                 echo 'Cloning from Git...'
-                checkout scmGit(branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/sanketpatil461/nodepipeline.git']])  // this is the script which we have generated through pipeline syntax for version control
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/master']],
+                    userRemoteConfigs: [[url: 'https://github.com/sanketpatil461/nodepipeline.git']]
+                ])
             }
         }
 
@@ -40,30 +46,29 @@ below is the code of the whole pipeline ------>
         stage('Test') {
             steps {
                 echo 'Testing Node.js project...'
-                sh './node_modules/mocha/bin/_mocha --exit ./test/test.js'
+                sh './node_modules/.bin/mocha --exit ./test/test.js'
             }
         }
 
         stage('Deploy') {
             steps {
                 echo 'Deploying to the server...'
-                echo 'Deploying Node.js project'
                 script {
-                    sshagent(['eb65d85a-ca49-4d9e-a14d-171dbcdded0a']) {    // this is the id of the user that we created in []
+                    // Use SSH Agent credentials to authenticate
+                    sshagent(credentials: ['eb65d85a-ca49-4d9e-a14d-171dbcdded0a']) {
                         sh '''
-                        ssh -o StrictHostKeyChecking=no ubuntu@3.92.192.219 << EOF   // here we given the public ip of the deployment server
-                        git pull --rebase https://github.com/sanketpatil461/nodepipeline.git     // the repository link from where we have to push the code (means our code is  already on that repository)
+                        ssh -o StrictHostKeyChecking=no ubuntu@3.92.192.219 << EOF
+                        cd nodepipeline || git clone https://github.com/sanketpatil461/nodepipeline.git && cd nodepipeline
+                        git pull origin master
                         npm install
                         sudo npm install -g pm2
                         pm2 restart index.js || pm2 start index.js
                         exit
                         EOF
                         '''
-
-                
                     }
                 }
             }
         }
     }
-    }
+}
